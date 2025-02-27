@@ -2,8 +2,14 @@ package graph
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"gql-comments/storage"
+	"math/rand"
 )
+
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
 
 type Resolver struct {
 	Storage *storage.InMemoryStorage
@@ -15,6 +21,23 @@ func (r *Resolver) Mutation() MutationResolver {
 
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
+}
+
+func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, allowComments bool) (*storage.Post, error) {
+	if title == "" || content == "" {
+		return nil, errors.New("title and content must not be empty")
+	}
+
+	id := fmt.Sprintf("post-%d", rand.Intn(1000000))
+	post := storage.Post{
+		ID:            id,
+		Title:         title,
+		Content:       content,
+		AllowComments: allowComments,
+	}
+
+	r.Storage.CreatePost(post)
+	return &post, nil
 }
 
 // type mutationResolver struct{ *Resolver }
