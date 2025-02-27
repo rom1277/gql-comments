@@ -40,7 +40,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
-	Post() PostResolver
 	Query() QueryResolver
 }
 
@@ -53,10 +52,10 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		ApproveComments func(childComplexity int) int
-		Content         func(childComplexity int) int
-		ID              func(childComplexity int) int
-		Title           func(childComplexity int) int
+		AllowComments func(childComplexity int) int
+		Content       func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Title         func(childComplexity int) int
 	}
 
 	Query struct {
@@ -66,9 +65,6 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreatePost(ctx context.Context, title string, content string, allowComments bool) (*storage.Post, error)
-}
-type PostResolver interface {
-	ApproveComments(ctx context.Context, obj *storage.Post) (bool, error)
 }
 type QueryResolver interface {
 	Posts(ctx context.Context) ([]*storage.Post, error)
@@ -105,12 +101,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreatePost(childComplexity, args["title"].(string), args["content"].(string), args["allowComments"].(bool)), true
 
-	case "Post.approveComments":
-		if e.complexity.Post.ApproveComments == nil {
+	case "Post.allowComments":
+		if e.complexity.Post.AllowComments == nil {
 			break
 		}
 
-		return e.complexity.Post.ApproveComments(childComplexity), true
+		return e.complexity.Post.AllowComments(childComplexity), true
 
 	case "Post.content":
 		if e.complexity.Post.Content == nil {
@@ -530,8 +526,8 @@ func (ec *executionContext) fieldContext_Mutation_createPost(ctx context.Context
 				return ec.fieldContext_Post_title(ctx, field)
 			case "content":
 				return ec.fieldContext_Post_content(ctx, field)
-			case "approveComments":
-				return ec.fieldContext_Post_approveComments(ctx, field)
+			case "allowComments":
+				return ec.fieldContext_Post_allowComments(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -682,8 +678,8 @@ func (ec *executionContext) fieldContext_Post_content(_ context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Post_approveComments(ctx context.Context, field graphql.CollectedField, obj *storage.Post) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Post_approveComments(ctx, field)
+func (ec *executionContext) _Post_allowComments(ctx context.Context, field graphql.CollectedField, obj *storage.Post) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Post_allowComments(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -696,7 +692,7 @@ func (ec *executionContext) _Post_approveComments(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Post().ApproveComments(rctx, obj)
+		return obj.AllowComments, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -713,12 +709,12 @@ func (ec *executionContext) _Post_approveComments(ctx context.Context, field gra
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Post_approveComments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Post_allowComments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Post",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
 		},
@@ -768,8 +764,8 @@ func (ec *executionContext) fieldContext_Query_posts(_ context.Context, field gr
 				return ec.fieldContext_Post_title(ctx, field)
 			case "content":
 				return ec.fieldContext_Post_content(ctx, field)
-			case "approveComments":
-				return ec.fieldContext_Post_approveComments(ctx, field)
+			case "allowComments":
+				return ec.fieldContext_Post_allowComments(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
 		},
@@ -2930,54 +2926,23 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Post_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "title":
 			out.Values[i] = ec._Post_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "content":
 			out.Values[i] = ec._Post_content(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
-		case "approveComments":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Post_approveComments(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "allowComments":
+			out.Values[i] = ec._Post_allowComments(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

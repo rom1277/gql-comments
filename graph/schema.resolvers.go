@@ -6,35 +6,45 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	// "gql-comments/graph"
 	"gql-comments/storage"
+	"math/rand"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, allowComments bool) (*storage.Post, error) {
-	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
-}
+	if title == "" || content == "" {
+		return nil, errors.New("title and content must not be empty")
+	}
 
-// ApproveComments is the resolver for the approveComments field.
-func (r *postResolver) ApproveComments(ctx context.Context, obj *storage.Post) (bool, error) {
-	panic(fmt.Errorf("not implemented: ApproveComments - approveComments"))
+	id := fmt.Sprintf("post-%d", rand.Intn(1000000))
+	post := storage.Post{
+		ID:            id,
+		Title:         title,
+		Content:       content,
+		AllowComments: allowComments,
+	}
+
+	r.Storage.CreatePost(post)
+	return &post, nil
 }
 
 // Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context) ([]*storage.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
-}
+// func (r *queryResolver) Posts(ctx context.Context) ([]*storage.Post, error) {
+// 	posts := r.Storage.GetAllPosts()
+// 	var result []*storage.Post
+// 	for i := range posts {
+// 		result = append(result, &posts[i])
+// 	}
+// 	return result, nil
+// }
 
 // Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
-
-// Post returns PostResolver implementation.
-func (r *Resolver) Post() PostResolver { return &postResolver{r} }
+// func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-type postResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

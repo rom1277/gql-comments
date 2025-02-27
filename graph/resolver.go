@@ -1,32 +1,21 @@
 package graph
 
-// This file will not be regenerated automatically.
-// //
-// It serves as dependency injection for your app, add any dependencies you require here.
+import (
+	"context"
+	"gql-comments/storage"
+)
 
-type Resolver struct{}
+type Resolver struct {
+	Storage *storage.InMemoryStorage
+}
 
-// package graph
+func (r *Resolver) Mutation() MutationResolver {
+	return &mutationResolver{r}
+}
 
-// import (
-// 	"context"
-// 	"errors"
-// 	"fmt"
-// 	"gql-comments/storage"
-// 	"math/rand"
-// )
-
-// type Resolver struct {
-// 	Storage *storage.InMemoryStorage
-// }
-
-// func (r *Resolver) Mutation() MutationResolver {
-// 	return &mutationResolver{r}
-// }
-
-// func (r *Resolver) Query() QueryResolver {
-// 	return &queryResolver{r}
-// }
+func (r *Resolver) Query() QueryResolver {
+	return &queryResolver{r}
+}
 
 // type mutationResolver struct{ *Resolver }
 
@@ -49,11 +38,11 @@ type Resolver struct{}
 
 // type queryResolver struct{ *Resolver }
 
-// func (r *queryResolver) Posts(ctx context.Context) ([]*storage.Post, error) {
-// 	posts := r.Storage.GetAllPosts()
-// 	var result []*storage.Post
-// 	for i := range posts {
-// 		result = append(result, &posts[i])
-// 	}
-// 	return result, nil
-// }
+func (r *queryResolver) Posts(ctx context.Context) ([]*storage.Post, error) {
+	posts := r.Storage.GetAllPosts()
+	var result []*storage.Post
+	for i := range posts {
+		result = append(result, &posts[i])
+	}
+	return result, nil
+}

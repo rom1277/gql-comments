@@ -1,4 +1,4 @@
-1) создал greph/schema.graphqls, написал схему 
+1) создал greph/schema.graphqls, определил схему данных
 2) добавил зависимости
 go get github.com/99designs/gqlgen
 go get github.com/99designs/gqlgen/graphql/handler
@@ -9,6 +9,32 @@ go get github.com/99designs/gqlgen/graphql/playground
 6) генерируем код go run github.com/99designs/gqlgen generate
 7) прописываем graph/resolver.go
 
+
+
+примеры запросов:
+
+
+mutation {
+  createPost(title: "My First Post", content: "This is the content of my first post.", allowComments: true) {
+    id
+    title
+    content
+    allowComments
+  }
+}
+
+
+
+
+
+query {
+  posts {
+    id
+    title
+    content
+    allowComments
+  }
+}
 
 
 
