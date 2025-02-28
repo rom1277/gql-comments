@@ -15,14 +15,14 @@ go get github.com/99designs/gqlgen/graphql/playground
 
 
 mutation {
-  createPost(title: "My First Post", content: "This is the content of my first post.", allowComments: true) {
+  createPost(input: { user: "JohnDoe", title: "My First Post", content: "This is the content of my first post.", allowComments: true }) {
     id
     title
     content
     allowComments
+    createdAt
   }
 }
-
 
 
 
@@ -35,7 +35,3 @@ query {
     allowComments
   }
 }
-
-
-
-реализуй

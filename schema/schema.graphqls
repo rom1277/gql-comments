@@ -1,0 +1,45 @@
+scalar Time
+
+type Post {
+    id: Int!
+    title: String!
+    user: String!
+    content: String!
+    allowComments: Boolean!
+    createdAt: Time!
+    comments: [Comment!]
+}
+
+
+type Comment {
+  id: Int!
+  user: String!
+  postID: Int!
+  text: String!
+  createdAt: Time!
+  replies: [Comment!]
+}
+
+input NewPost {
+  user: String!
+  title: String!
+  content: String!
+  allowComments: Boolean
+}
+
+input NewComment {
+  postID: Int!
+  user: String!
+  text: String!
+}
+
+type Query{
+    posts: [Post!]
+    post(id: Int!): Post
+    comments(postID: Int!): [Comment!]!
+}
+
+type Mutation {
+  createPost(input: NewPost): Post!
+  createComment(input: NewComment!): Comment!
+}

@@ -6,22 +6,30 @@
 
 # где находится схема 
 schema:
-  - graph/schema.graphqls
+  - schema/schema.graphqls
 # имя файла, в котором будет храниться сгенерированный исполняемый код 
 exec:
-  filename: graph/generated.go
+  filename: graph/generated/generated.go
 # имя файла, в котором будут храниться сгенерированные модели данных 
 model:
   filename: graph/model/models_gen.go
 # настраивает, как будут организованы резолверы
 resolver:
   layout: follow-schema
-  dir: graph
-  package: graph
+  dir: graph/resolvers
+  package: resolvers
 # указывает дополнительные пакеты, которые должны быть автоматически связаны с GraphQL-схемой.
 autobind:
-  - "gql-comments/storage"
+  - "gql-comments/structures"
 # явно связывает типы из вашей GraphQL-схемы с соответствующими структурами
 models:
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+  Time:
+    model:
+      - github.com/99designs/gqlgen/graphql.Time
   Post:
-    model: gql-comments/storage.Post
+    model: structures.Post
+  Comment:
+    model: structures.Comment

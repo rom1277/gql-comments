@@ -3,8 +3,9 @@ package main
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"gql-comments/graph"
-	"gql-comments/storage"
+	"gql-comments/graph/generated"
+	"gql-comments/graph/resolvers"
+	"gql-comments/storage/inmemory"
 	"log"
 	"net/http"
 	"os"
@@ -18,14 +19,17 @@ func main() {
 	}
 
 	// Инициализация in-memory хранилища
-	inMemoryStorage := storage.NewInMemoryStorage()
+	inMemoryStorage := inmemory.NewInMemoryStorage()
 
 	// Создание GraphQL сервера
-	// srv := handler.GraphQL(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: inMemoryStorage}})) //! новая версия, надо разобраться
+
+	// handler.NewDefaultServer() изначально предназначался для демонстрационных целей и не рекомендуется для использования в продакшене.
+	// Использование handler.New позволяет настроить сервер более детально и избежать потенциальных проблем, связанных с устаревшими функциями.
+	// srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: inMemoryStorage}}))
 
 	// graph.NewExecutableSchema создаёт исполняемую схему GraphQL.
 	// handler.NewDefaultServer оборачивает схему в HTTP-обработчик.
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: inMemoryStorage}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{Storage: inMemoryStorage}}))
 	//http.Handle — связывает определенный путь ("/") с обработчиком запросов.
 	// playground.Handler("GraphQL playground", "/query") — это обработчик, который предоставляет интерактивный веб-интерфейс (GraphQL Playground) для тестирования GraphQL-запросов.
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
