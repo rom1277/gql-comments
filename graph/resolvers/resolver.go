@@ -29,7 +29,7 @@ func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{r}
 }
 
-// CreatePost is the resolver for the createPost field.
+// Посты:
 func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost) (*structures.Post, error) {
 	if input.Title == "" || input.Content == "" {
 		return nil, errors.New("title and content must not be empty")
@@ -46,7 +46,6 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost)
 	return createdPost, nil
 }
 
-// Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context) ([]*structures.Post, error) {
 	posts := r.Storage.GetAllPosts()
 	var result []*structures.Post
@@ -59,17 +58,19 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*structures.Post, error) {
 	return result, nil
 }
 
-// CreateComment is the resolver for the createComment field.
+func (r *queryResolver) Post(ctx context.Context, id int) (*structures.Post, error) {
+	post, err := r.Storage.GetPostbyId(ctx, id)
+	if err != nil {
+		return &post, err
+	}
+	return &post, nil
+}
+
+// Комментарии
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*structures.Comment, error) {
 	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
 }
 
-// Post is the resolver for the post field.
-func (r *queryResolver) Post(ctx context.Context, id int) (*structures.Post, error) {
-	panic(fmt.Errorf("not implemented: Post - post"))
-}
-
-// Comments is the resolver for the comments field.
 func (r *queryResolver) Comments(ctx context.Context, postID int) ([]*structures.Comment, error) {
 	panic(fmt.Errorf("not implemented: Comments - comments"))
 }

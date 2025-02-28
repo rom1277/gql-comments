@@ -13,7 +13,7 @@ go get github.com/99designs/gqlgen/graphql/playground
 
 примеры запросов:
 
-
+# создать пост:
 mutation {
   createPost(input: { user: "JohnDoe", title: "My First Post", content: "This is the content of my first post.", allowComments: true }) {
     id
@@ -23,10 +23,7 @@ mutation {
     createdAt
   }
 }
-
-
-
-
+# вывести все посты
 query {
   posts {
     id
@@ -36,3 +33,38 @@ query {
     createdAt
   }
 }
+
+# запрос поста по id
+query {
+  post(id: 88) {
+    id
+    title
+    content
+    user
+    allowComments
+    createdAt
+    comments {
+      id
+      user
+      text
+      createdAt
+      replies {
+        id
+        user
+        text
+        createdAt
+      }
+    }
+  }
+}
+
+
+#
+
+#
+
+#
+
+#
+
+#

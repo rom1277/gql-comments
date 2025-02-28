@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"errors"
 	"gql-comments/structures"
 	"sync"
 	"time"
@@ -35,4 +36,14 @@ func (s *InMemoryStorage) GetAllPosts() []structures.Post {
 		posts = append(posts, post)
 	}
 	return posts
+}
+
+func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.Post, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	post, ok := s.posts[id]
+	if !ok {
+		return post, errors.New("there is no such id")
+	}
+	return post, nil
 }
