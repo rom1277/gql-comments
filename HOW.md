@@ -33,5 +33,6 @@ query {
     title
     content
     allowComments
+    createdAt
   }
 }

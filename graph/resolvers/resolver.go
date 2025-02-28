@@ -48,7 +48,15 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost)
 
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context) ([]*structures.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	posts := r.Storage.GetAllPosts()
+	var result []*structures.Post
+	for i := range posts {
+		result = append(result, &posts[i])
+	}
+	if len(result) == 0 {
+		return nil, errors.New("no added posts")
+	}
+	return result, nil
 }
 
 // CreateComment is the resolver for the createComment field.

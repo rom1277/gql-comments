@@ -26,3 +26,13 @@ func (s *InMemoryStorage) CreatePost(ctx context.Context, post *structures.Post)
 	s.posts[post.ID] = *post
 	return post, nil
 }
+
+func (s *InMemoryStorage) GetAllPosts() []structures.Post {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	var posts []structures.Post
+	for _, post := range s.posts {
+		posts = append(posts, post)
+	}
+	return posts
+}
