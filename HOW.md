@@ -37,10 +37,17 @@ mutation {
    }
 }
 
-
-
-
-
+# вывести комментарии по postID
+query {
+  comments(postID: 1) {
+    id
+    user
+    text
+    createdAt
+    postID
+    parentID
+  }
+}
 
 
 

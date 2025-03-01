@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Comments func(childComplexity int, postID int) int
+		Comments func(childComplexity int, postID int, limit *int, offset *int) int
 		Post     func(childComplexity int, id int) int
 		Posts    func(childComplexity int) int
 		Replies  func(childComplexity int, commentID int, limit *int, offset *int) int
@@ -90,7 +90,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Posts(ctx context.Context) ([]*structures.Post, error)
 	Post(ctx context.Context, id int) (*structures.Post, error)
-	Comments(ctx context.Context, postID int) ([]*structures.Comment, error)
+	Comments(ctx context.Context, postID int, limit *int, offset *int) ([]*structures.Comment, error)
 	Replies(ctx context.Context, commentID int, limit *int, offset *int) ([]*structures.Comment, error)
 }
 
@@ -267,7 +267,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Comments(childComplexity, args["postID"].(int)), true
+		return e.complexity.Query.Comments(childComplexity, args["postID"].(int), args["limit"].(*int), args["offset"].(*int)), true
 
 	case "Query.post":
 		if e.complexity.Query.Post == nil {
@@ -447,7 +447,7 @@ input NewComment {
 type Query{
     posts: [Post!]
     post(id: Int!): Post
-    comments(postID: Int!): [Comment!]!
+    comments(postID: Int!, limit: Int, offset: Int): [Comment!]!
     replies(commentID: Int!, limit: Int, offset: Int): [Comment!]!
 }
 
@@ -731,6 +731,16 @@ func (ec *executionContext) field_Query_comments_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["postID"] = arg0
+	arg1, err := ec.field_Query_comments_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := ec.field_Query_comments_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg2
 	return args, nil
 }
 func (ec *executionContext) field_Query_comments_argsPostID(
@@ -748,6 +758,42 @@ func (ec *executionContext) field_Query_comments_argsPostID(
 	}
 
 	var zeroVal int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_comments_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	if _, ok := rawArgs["limit"]; !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_comments_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	if _, ok := rawArgs["offset"]; !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -1986,7 +2032,7 @@ func (ec *executionContext) _Query_comments(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Comments(rctx, fc.Args["postID"].(int))
+		return ec.resolvers.Query().Comments(rctx, fc.Args["postID"].(int), fc.Args["limit"].(*int), fc.Args["offset"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

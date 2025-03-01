@@ -95,15 +95,53 @@ func (r *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *st
 	return comment, nil
 }
 
-func (c *InMemoryStorageCommenst) GetCommentbyId(ctx context.Context, postId int) (*structures.Comment, error) {
+func (c *InMemoryStorageCommenst) GetCommentsByPost(postId, limit, offset int) ([]*structures.Comment, error) {
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	comment, ok := c.comments[postId]
-	if !ok {
-		return nil, errors.New("there is no such post id")
+
+	var result []*structures.Comment
+
+	for _, comment := range c.comments {
+		if comment.Replies == nil && comment.PostID == postId {
+			com := comment
+			result = append(result, &com)
+		}
 	}
-	return &comment, nil
+	if offset > len(result) {
+		return nil, nil
+	}
+
+	if offset+limit > len(result) || limit == -1 {
+		return result[offset:], nil
+	}
+
+	if offset < 0 || limit < 0 {
+		return nil, errors.New("limit and offset should not be negative")
+	}
+
+	return result[offset : offset+limit], nil
 }
+
+// func (c *InMemoryStorageCommenst) GetCommentbyPostId(ctx context.Context, postId int) ([]structures.Comment, error) {
+// 	c.mu.Lock()
+// 	defer c.mu.Unlock()
+// 	comments, ok := c.comments[postId]
+// 	if !ok {
+// 		return nil, errors.New("there is no such post id")
+// 	}
+// 	// return comment, nil
+// }
+
+// func (s *InMemoryStorage) GetAllPosts() []structures.Post {
+// 	s.mu.Lock()
+// 	defer s.mu.Unlock()
+// 	var posts []structures.Post
+// 	for _, post := range s.posts {
+// 		posts = append(posts, post)
+// 	}
+// 	return posts
+// }
 
 // func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.Post, error) {
 // 	s.mu.Lock()

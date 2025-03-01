@@ -10,6 +10,11 @@ import (
 	"gql-comments/structures"
 )
 
+const (
+	ConstOffset = 0
+	ConstLimit  = 10
+)
+
 type Resolver struct {
 	Storage         *inmemory.InMemoryStorage
 	StorageComments *inmemory.InMemoryStorageCommenst
@@ -77,6 +82,9 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	if input.PostID == 0 || input.User == "" || input.Text == "" {
 		return nil, errors.New("invalid input: postID, user, and text must not be empty")
 	}
+	if len(input.Text) > 2000 {
+		return nil, errors.New("comment exceeds 2000 characters")
+	}
 	comment := &structures.Comment{
 		PostID:   input.PostID,
 		ParentID: input.ParentID,
@@ -91,27 +99,34 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	return createdComment, nil
 }
 
-func (r *queryResolver) Comments(ctx context.Context, postID int) ([]*structures.Comment, error) {
-	panic(fmt.Errorf("not implemented: Comments - comments"))
+// Comments is the resolver for the comments field.
+func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, offset *int) ([]*structures.Comment, error) {
+	// Устанавливаем значения по умолчанию для limit и offset
+	limitVal := ConstLimit // Значение по умолчанию для limit
+	if limit != nil {
+		limitVal = *limit
+	}
+
+	offsetVal := ConstOffset // Значение по умолчанию для offset
+	if offset != nil {
+		offsetVal = *offset
+	}
+
+	// Вызываем метод хранилища для получения комментариев
+	comments, err := r.StorageComments.GetCommentsByPost(postID, limitVal, offsetVal)
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }
-
-//
-
-//
-
-//
-
-//
-
-//
-
-// Mutation returns generated.MutationResolver implementation.
 
 // Replies is the resolver for the replies field.
 func (r *queryResolver) Replies(ctx context.Context, commentID int, limit *int, offset *int) ([]*structures.Comment, error) {
 	panic(fmt.Errorf("not implemented: Replies - replies"))
 }
 
+// CloseCommentsPost is the resolver for the closeCommentsPost field.
 func (r *mutationResolver) CloseCommentsPost(ctx context.Context, user string, postID int, commentsAllowed bool) (*structures.Post, error) {
 	panic(fmt.Errorf("not implemented: CloseCommentsPost - closeCommentsPost"))
 }
