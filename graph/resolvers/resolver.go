@@ -3,7 +3,6 @@ package resolvers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"gql-comments/graph/generated"
 	"gql-comments/graph/model"
 	"gql-comments/storage/inmemory"
@@ -108,18 +107,70 @@ func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, of
 		offsetVal = *offset
 	}
 
-	comments, err := r.StorageComments.GetCommentsByPost(postID, limitVal, offsetVal)
+	topLevelComments, err := r.StorageComments.GetCommentsByPost(postID, limitVal, offsetVal)
 	if err != nil {
 		return nil, err
 	}
 
-	return comments, nil
+	for _, comment := range topLevelComments {
+		comment.Replies, err = r.getReplies(comment.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return topLevelComments, nil
+}
+
+// Вспомогательный метод для получения ответов на комментарии
+func (r *queryResolver) getReplies(commentID int) ([]*structures.Comment, error) {
+	replies, err := r.StorageComments.GetResponsesByCommentID(commentID, -1, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, reply := range replies {
+		reply.Replies, err = r.getReplies(reply.ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return replies, nil
 }
 
 func (r *queryResolver) Replies(ctx context.Context, commentID int, limit *int, offset *int) ([]*structures.Comment, error) {
-	panic(fmt.Errorf("not implemented: Replies - replies"))
+	limitVal := ConstLimit
+	if limit != nil {
+		limitVal = *limit
+	}
+
+	offsetVal := ConstOffset
+	if offset != nil {
+		offsetVal = *offset
+	}
+	replies, err := r.StorageComments.GetResponsesByCommentID(commentID, limitVal, offsetVal)
+	if err != nil {
+		return nil, err
+	}
+
+	return replies, nil
 }
 
 func (r *mutationResolver) CloseCommentsPost(ctx context.Context, user string, postID int, commentsAllowed bool) (*structures.Post, error) {
-	panic(fmt.Errorf("not implemented: CloseCommentsPost - closeCommentsPost"))
+	post, err := r.Storage.GetPostbyId(ctx, postID)
+	if err != nil {
+		return nil, errors.New("post not found")
+	}
+	if post.User != user {
+		return nil, errors.New("only the author can modify this post")
+	}
+	post.AllowComments = commentsAllowed
+
+	err = r.Storage.UpdatePost(ctx, post)
+	if err != nil {
+		return nil, errors.New("failed to update post")
+	}
+
+	return post, nil
 }

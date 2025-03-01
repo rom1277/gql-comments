@@ -63,62 +63,97 @@ func NewInMemoryStorageCommenst() *InMemoryStorageCommenst {
 	}
 }
 
-func (r *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *structures.Comment) (*structures.Comment, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (c *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *structures.Comment) (*structures.Comment, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	comment.CreatedAt = time.Now()
-	comment.ID = len(r.comments) + 1
-	r.comments[comment.ID] = *comment
+	comment.ID = comment.PostID*100 + len(c.comments) + 1
+	c.comments[comment.ID] = *comment
 	if comment.PostID != 0 {
-		if _, exists := r.postComments[comment.PostID]; !exists {
-			r.postComments[comment.PostID] = []int{}
+		if _, ok := c.postComments[comment.PostID]; !ok {
+			c.postComments[comment.PostID] = []int{}
 		}
-		r.postComments[comment.PostID] = append(r.postComments[comment.PostID], comment.ID)
+		c.postComments[comment.PostID] = append(c.postComments[comment.PostID], comment.ID)
 	}
 
 	// Если комментарий является ответом на другой комментарий, добавляем его в replies
 	if comment.ParentID != nil {
 		parentID := *comment.ParentID
-		// Проверяем, существует ли запись для данного ParentID
-		if _, exists := r.replies[parentID]; !exists {
-			r.replies[parentID] = []int{}
+		if _, ok := c.replies[parentID]; !ok {
+			c.replies[parentID] = []int{}
 		}
-		r.replies[parentID] = append(r.replies[parentID], comment.ID)
+		c.replies[parentID] = append(c.replies[parentID], comment.ID)
 	} else {
-		// Если это верхнеуровневый комментарий, добавляем его в replies для PostID
-		if _, exists := r.replies[comment.PostID]; !exists {
-			r.replies[comment.PostID] = []int{}
+		if _, ok := c.replies[comment.PostID]; !ok {
+			c.replies[comment.PostID] = []int{}
 		}
-		r.replies[comment.PostID] = append(r.replies[comment.PostID], comment.ID)
+		c.replies[comment.PostID] = append(c.replies[comment.PostID], comment.ID)
 	}
 
 	return comment, nil
 }
 
-func (c *InMemoryStorageCommenst) GetCommentsByPost(postId, limit, offset int) ([]*structures.Comment, error) {
-
+func (c *InMemoryStorageCommenst) GetCommentsByPost(postID, limit, offset int) ([]*structures.Comment, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	var result []*structures.Comment
-
 	for _, comment := range c.comments {
-		if comment.Replies == nil && comment.PostID == postId {
+		if comment.PostID == postID && comment.ParentID == nil {
 			com := comment
 			result = append(result, &com)
 		}
 	}
+
 	if offset > len(result) {
 		return nil, nil
 	}
-
 	if offset+limit > len(result) || limit == -1 {
 		return result[offset:], nil
 	}
-
 	if offset < 0 || limit < 0 {
 		return nil, errors.New("limit and offset should not be negative")
 	}
 
 	return result[offset : offset+limit], nil
+}
+
+func (c *InMemoryStorageCommenst) GetResponsesByCommentID(commentID, limit, offset int) ([]*structures.Comment, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	replies, ok := c.replies[commentID]
+	if !ok {
+		return nil, nil
+	}
+
+	var result []*structures.Comment
+	for _, replyID := range replies {
+		comment, ok := c.comments[replyID]
+		if ok {
+			com := comment
+			result = append(result, &com)
+		}
+	}
+
+	if offset > len(result) {
+		return nil, nil
+	}
+	if offset+limit > len(result) || limit == -1 {
+		return result[offset:], nil
+	}
+	if offset < 0 || limit < 0 {
+		return nil, errors.New("limit and offset should not be negative")
+	}
+	return result[offset : offset+limit], nil
+}
+
+func (s *InMemoryStorage) UpdatePost(ctx context.Context, post *structures.Post) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, exists := s.posts[post.ID]; !exists {
+		return errors.New("post not found")
+	}
+	s.posts[post.ID] = *post
+	return nil
 }
