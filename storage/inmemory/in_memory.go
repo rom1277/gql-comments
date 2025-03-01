@@ -122,33 +122,3 @@ func (c *InMemoryStorageCommenst) GetCommentsByPost(postId, limit, offset int) (
 
 	return result[offset : offset+limit], nil
 }
-
-// func (c *InMemoryStorageCommenst) GetCommentbyPostId(ctx context.Context, postId int) ([]structures.Comment, error) {
-// 	c.mu.Lock()
-// 	defer c.mu.Unlock()
-// 	comments, ok := c.comments[postId]
-// 	if !ok {
-// 		return nil, errors.New("there is no such post id")
-// 	}
-// 	// return comment, nil
-// }
-
-// func (s *InMemoryStorage) GetAllPosts() []structures.Post {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
-// 	var posts []structures.Post
-// 	for _, post := range s.posts {
-// 		posts = append(posts, post)
-// 	}
-// 	return posts
-// }
-
-// func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.Post, error) {
-// 	s.mu.Lock()
-// 	defer s.mu.Unlock()
-// 	post, ok := s.posts[id]
-// 	if !ok {
-// 		return post, errors.New("there is no such id")
-// 	}
-// 	return post, nil
-// }

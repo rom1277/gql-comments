@@ -34,7 +34,6 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 	return &mutationResolver{r}
 }
 
-// Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{r}
 }
@@ -95,24 +94,20 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	if err != nil {
 		return nil, err
 	}
-	// r.Notifier.Notify(comment.PostID, createdComment)
 	return createdComment, nil
 }
 
-// Comments is the resolver for the comments field.
 func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, offset *int) ([]*structures.Comment, error) {
-	// Устанавливаем значения по умолчанию для limit и offset
-	limitVal := ConstLimit // Значение по умолчанию для limit
+	limitVal := ConstLimit
 	if limit != nil {
 		limitVal = *limit
 	}
 
-	offsetVal := ConstOffset // Значение по умолчанию для offset
+	offsetVal := ConstOffset
 	if offset != nil {
 		offsetVal = *offset
 	}
 
-	// Вызываем метод хранилища для получения комментариев
 	comments, err := r.StorageComments.GetCommentsByPost(postID, limitVal, offsetVal)
 	if err != nil {
 		return nil, err
@@ -121,12 +116,10 @@ func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, of
 	return comments, nil
 }
 
-// Replies is the resolver for the replies field.
 func (r *queryResolver) Replies(ctx context.Context, commentID int, limit *int, offset *int) ([]*structures.Comment, error) {
 	panic(fmt.Errorf("not implemented: Replies - replies"))
 }
 
-// CloseCommentsPost is the resolver for the closeCommentsPost field.
 func (r *mutationResolver) CloseCommentsPost(ctx context.Context, user string, postID int, commentsAllowed bool) (*structures.Post, error) {
 	panic(fmt.Errorf("not implemented: CloseCommentsPost - closeCommentsPost"))
 }
