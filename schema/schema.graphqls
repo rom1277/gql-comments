@@ -47,3 +47,7 @@ type Mutation {
   createComment(input: NewComment!): Comment!
   closeCommentsPost(user: String!, postID: Int!, commentsAllowed: Boolean!): Post!
 }
+
+type Subscription {
+  commentAdded(postID: Int!): Comment!
+}

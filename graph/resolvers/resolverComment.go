@@ -7,7 +7,6 @@ import (
 	"gql-comments/structures"
 )
 
-// Комментарии
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*structures.Comment, error) {
 	if input.PostID == 0 || input.User == "" || input.Text == "" {
 		return nil, errors.New("invalid input: postID, user, and text must not be empty")
@@ -25,6 +24,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	if err != nil {
 		return nil, err
 	}
+	r.Notifier.Notify(input.PostID, createdComment)
 	return createdComment, nil
 }
 

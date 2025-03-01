@@ -12,17 +12,16 @@ import (
 )
 
 func main() {
-	// можно задать порт, на котором запустится программа  PORT=9090 go run cmd/main.go
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// Инициализация in-memory хранилища
-	// inMemoryStorage := inmemory.NewInMemoryStorage()
-	inMemoryStorage := inmemory.NewInMemoryStorage()
+	inMemoryStoragePost := inmemory.NewInMemoryStoragePost()
 	inMemoryStorageComments := inmemory.NewInMemoryStorageCommenst()
-	resolver := resolvers.NewResolver(inMemoryStorage, inMemoryStorageComments)
+	Notifier := inmemory.NewNotifier()
+
+	resolver := resolvers.NewResolver(inMemoryStoragePost, inMemoryStorageComments, Notifier)
 	// Создание GraphQL сервера
 
 	// handler.NewDefaultServer() изначально предназначался для демонстрационных целей и не рекомендуется для использования в продакшене.
@@ -42,6 +41,5 @@ func main() {
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 	// http.ListenAndServe — это функция, которая запускает HTTP-сервер.
-	// Аргумент ":" + port указывает адрес и порт, на котором сервер будет слушать входящие соединения.
 	// (nil) указывает, что будут использованы глобальные маршруты, зарегистрированные через http.Handle.
 }

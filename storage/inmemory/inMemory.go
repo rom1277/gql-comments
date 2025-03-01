@@ -17,6 +17,17 @@ type InMemoryStorageCommenst struct {
 	mu           sync.Mutex
 }
 
+type Notifier struct {
+	subscribers map[int][]chan *structures.Comment
+	mu          sync.Mutex
+}
+
+func NewInMemoryStoragePost() *InMemoryStoragePost {
+	return &InMemoryStoragePost{
+		posts: make(map[int]structures.Post),
+	}
+}
+
 func NewInMemoryStorageCommenst() *InMemoryStorageCommenst {
 	return &InMemoryStorageCommenst{
 		comments:     make(map[int]structures.Comment),
@@ -25,8 +36,8 @@ func NewInMemoryStorageCommenst() *InMemoryStorageCommenst {
 	}
 }
 
-func NewInMemoryStorage() *InMemoryStoragePost {
-	return &InMemoryStoragePost{
-		posts: make(map[int]structures.Post),
+func NewNotifier() *Notifier {
+	return &Notifier{
+		subscribers: make(map[int][]chan *structures.Comment),
 	}
 }

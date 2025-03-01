@@ -7,7 +7,6 @@ import (
 	"gql-comments/structures"
 )
 
-// Посты:
 func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost) (*structures.Post, error) {
 	if input.Title == "" || input.Content == "" {
 		return nil, errors.New("title and content must not be empty")

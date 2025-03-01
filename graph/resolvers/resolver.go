@@ -10,20 +10,15 @@ const (
 	ConstLimit  = 10
 )
 
+type mutationResolver struct{ *Resolver }
+
+type queryResolver struct{ *Resolver }
+
 type Resolver struct {
 	Storage         *inmemory.InMemoryStoragePost
 	StorageComments *inmemory.InMemoryStorageCommenst
+	Notifier        *inmemory.Notifier
 }
-
-func NewResolver(storage *inmemory.InMemoryStoragePost, storageComments *inmemory.InMemoryStorageCommenst) *Resolver {
-	return &Resolver{
-		Storage:         storage,
-		StorageComments: storageComments,
-	}
-}
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
 
 func (r *Resolver) Mutation() generated.MutationResolver {
 	return &mutationResolver{r}
@@ -31,4 +26,12 @@ func (r *Resolver) Mutation() generated.MutationResolver {
 
 func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{r}
+}
+
+func NewResolver(storagePost *inmemory.InMemoryStoragePost, storageComments *inmemory.InMemoryStorageCommenst, notifier *inmemory.Notifier) *Resolver {
+	return &Resolver{
+		Storage:         storagePost,
+		StorageComments: storageComments,
+		Notifier:        notifier,
+	}
 }
