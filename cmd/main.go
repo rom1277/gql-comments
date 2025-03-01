@@ -19,8 +19,10 @@ func main() {
 	}
 
 	// Инициализация in-memory хранилища
+	// inMemoryStorage := inmemory.NewInMemoryStorage()
 	inMemoryStorage := inmemory.NewInMemoryStorage()
-
+	inMemoryStorageComments := inmemory.NewInMemoryStorageCommenst()
+	resolver := resolvers.NewResolver(inMemoryStorage, inMemoryStorageComments)
 	// Создание GraphQL сервера
 
 	// handler.NewDefaultServer() изначально предназначался для демонстрационных целей и не рекомендуется для использования в продакшене.
@@ -29,7 +31,7 @@ func main() {
 
 	// graph.NewExecutableSchema создаёт исполняемую схему GraphQL.
 	// handler.NewDefaultServer оборачивает схему в HTTP-обработчик.
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{Storage: inMemoryStorage}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
 	//http.Handle — связывает определенный путь ("/") с обработчиком запросов.
 	// playground.Handler("GraphQL playground", "/query") — это обработчик, который предоставляет интерактивный веб-интерфейс (GraphQL Playground) для тестирования GraphQL-запросов.
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))

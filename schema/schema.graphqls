@@ -7,7 +7,7 @@ type Post {
     content: String!
     allowComments: Boolean!
     createdAt: Time!
-    comments: [Comment!]
+    comments(limit: Int, offset: Int): [Comment!]
 }
 
 
@@ -15,20 +15,22 @@ type Comment {
   id: Int!
   user: String!
   postID: Int!
+  parentID: Int
   text: String!
   createdAt: Time!
-  replies: [Comment!]
+  replies(limit: Int, offset: Int): [Comment!]
 }
 
 input NewPost {
   user: String!
   title: String!
   content: String!
-  allowComments: Boolean
+  allowComments: Boolean!
 }
 
 input NewComment {
   postID: Int!
+  parentID: Int
   user: String!
   text: String!
 }
@@ -36,10 +38,12 @@ input NewComment {
 type Query{
     posts: [Post!]
     post(id: Int!): Post
-    comments(postID: Int!): [Comment!]!
+    comments(postID: Int!, limit: Int, offset: Int): [Comment!]!
+    replies(commentID: Int!, limit: Int, offset: Int): [Comment!]!
 }
 
 type Mutation {
   createPost(input: NewPost): Post!
   createComment(input: NewComment!): Comment!
+  closeCommentsPost(user: String!, postID: Int!, commentsAllowed: Boolean!): Post!
 }

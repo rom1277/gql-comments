@@ -6,7 +6,8 @@ go get github.com/99designs/gqlgen/graphql/playground
 3) определил структуру и методы storage/in_memory.go
 4) написал cmd/main.go 
 5) создаем файл gqlgen.yml - настройка процесса генерации кода
-6) генерируем код go run github.com/99designs/gqlgen generate
+6) генерируем код 
+go run github.com/99designs/gqlgen generate
 7) прописываем graph/resolver.go
 
 
@@ -23,6 +24,26 @@ mutation {
     createdAt
   }
 }
+
+
+# Создать коммент
+mutation {
+  createComment(input: { postID: 1, user: "PIsa popa", text: "This is a great post!" }) {
+    id
+    user
+    postID
+    text
+    createdAt  
+   }
+}
+
+
+
+
+
+
+
+
 # вывести все посты
 query {
   posts {
@@ -59,7 +80,6 @@ query {
 }
 
 
-#
 
 #
 

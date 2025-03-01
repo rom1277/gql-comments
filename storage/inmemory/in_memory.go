@@ -38,14 +38,14 @@ func (s *InMemoryStorage) GetAllPosts() []structures.Post {
 	return posts
 }
 
-func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.Post, error) {
+func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (*structures.Post, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	post, ok := s.posts[id]
 	if !ok {
-		return post, errors.New("there is no such id")
+		return nil, errors.New("there is no such id")
 	}
-	return post, nil
+	return &post, nil
 }
 
 type InMemoryStorageCommenst struct {
@@ -69,9 +69,48 @@ func (r *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *st
 	comment.CreatedAt = time.Now()
 	comment.ID = len(r.comments) + 1
 	r.comments[comment.ID] = *comment
-	r.replies[comment.PostID] = append(r.replies[comment.PostID], comment.ID)
-	// if comment.ParentID != nil {
-	// 	r.repliers[*comment.ParentID] = append(r.repliers[*comment.ParentID], comment.ID)
-	// }
+	if comment.PostID != 0 {
+		if _, exists := r.postComments[comment.PostID]; !exists {
+			r.postComments[comment.PostID] = []int{}
+		}
+		r.postComments[comment.PostID] = append(r.postComments[comment.PostID], comment.ID)
+	}
+
+	// Если комментарий является ответом на другой комментарий, добавляем его в replies
+	if comment.ParentID != nil {
+		parentID := *comment.ParentID
+		// Проверяем, существует ли запись для данного ParentID
+		if _, exists := r.replies[parentID]; !exists {
+			r.replies[parentID] = []int{}
+		}
+		r.replies[parentID] = append(r.replies[parentID], comment.ID)
+	} else {
+		// Если это верхнеуровневый комментарий, добавляем его в replies для PostID
+		if _, exists := r.replies[comment.PostID]; !exists {
+			r.replies[comment.PostID] = []int{}
+		}
+		r.replies[comment.PostID] = append(r.replies[comment.PostID], comment.ID)
+	}
+
 	return comment, nil
 }
+
+func (c *InMemoryStorageCommenst) GetCommentbyId(ctx context.Context, postId int) (*structures.Comment, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	comment, ok := c.comments[postId]
+	if !ok {
+		return nil, errors.New("there is no such post id")
+	}
+	return &comment, nil
+}
+
+// func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.Post, error) {
+// 	s.mu.Lock()
+// 	defer s.mu.Unlock()
+// 	post, ok := s.posts[id]
+// 	if !ok {
+// 		return post, errors.New("there is no such id")
+// 	}
+// 	return post, nil
+// }
