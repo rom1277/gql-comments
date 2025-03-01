@@ -47,3 +47,31 @@ func (s *InMemoryStorage) GetPostbyId(ctx context.Context, id int) (structures.P
 	}
 	return post, nil
 }
+
+type InMemoryStorageCommenst struct {
+	comments     map[int]structures.Comment
+	postComments map[int][]int
+	replies      map[int][]int
+	mu           sync.Mutex
+}
+
+func NewInMemoryStorageCommenst() *InMemoryStorageCommenst {
+	return &InMemoryStorageCommenst{
+		comments:     make(map[int]structures.Comment),
+		postComments: make(map[int][]int),
+		replies:      make(map[int][]int),
+	}
+}
+
+func (r *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *structures.Comment) (*structures.Comment, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	comment.CreatedAt = time.Now()
+	comment.ID = len(r.comments) + 1
+	r.comments[comment.ID] = *comment
+	r.replies[comment.PostID] = append(r.replies[comment.PostID], comment.ID)
+	// if comment.ParentID != nil {
+	// 	r.repliers[*comment.ParentID] = append(r.repliers[*comment.ParentID], comment.ID)
+	// }
+	return comment, nil
+}

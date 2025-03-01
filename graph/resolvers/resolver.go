@@ -11,7 +11,8 @@ import (
 )
 
 type Resolver struct {
-	Storage *inmemory.InMemoryStorage
+	Storage         *inmemory.InMemoryStorage
+	StorageComments *inmemory.InMemoryStorageCommenst
 }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
@@ -64,7 +65,16 @@ func (r *queryResolver) Post(ctx context.Context, id int) (*structures.Post, err
 
 // Комментарии
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*structures.Comment, error) {
-	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
+	comment := &structures.Comment{
+		PostID: input.PostID,
+		User:   input.User,
+		Text:   input.Text,
+	}
+	createdComment, err := r.StorageComments.CreateComment(ctx, comment)
+	if err != nil {
+		return nil, err
+	}
+	return createdComment, nil
 }
 
 func (r *queryResolver) Comments(ctx context.Context, postID int) ([]*structures.Comment, error) {
