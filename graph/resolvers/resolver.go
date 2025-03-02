@@ -15,7 +15,7 @@ type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
 type Resolver struct {
-	Storage         *inmemory.InMemoryStoragePost
+	StoragePost     *inmemory.InMemoryStoragePost
 	StorageComments *inmemory.InMemoryStorageCommenst
 	Notifier        *inmemory.Notifier
 }
@@ -30,7 +30,7 @@ func (r *Resolver) Query() generated.QueryResolver {
 
 func NewResolver(storagePost *inmemory.InMemoryStoragePost, storageComments *inmemory.InMemoryStorageCommenst, notifier *inmemory.Notifier) *Resolver {
 	return &Resolver{
-		Storage:         storagePost,
+		StoragePost:     storagePost,
 		StorageComments: storageComments,
 		Notifier:        notifier,
 	}

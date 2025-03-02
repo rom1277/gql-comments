@@ -8,8 +8,8 @@ import (
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost) (*structures.Post, error) {
-	if input.Title == "" || input.Content == "" {
-		return nil, errors.New("title and content must not be empty")
+	if input.Title == "" || input.Content == "" || input.User == "" {
+		return nil, errors.New("title, user and content must not be empty")
 	}
 	post := &structures.Post{
 		User:          input.User,
@@ -17,7 +17,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost)
 		Content:       input.Content,
 		AllowComments: input.AllowComments,
 	}
-	createdPost, err := r.Storage.CreatePost(ctx, post)
+	createdPost, err := r.StoragePost.CreatePost(ctx, post)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input *model.NewPost)
 }
 
 func (r *queryResolver) Posts(ctx context.Context) ([]*structures.Post, error) {
-	posts := r.Storage.GetAllPosts()
+	posts := r.StoragePost.GetAllPosts()
 	var result []*structures.Post
 	for i := range posts {
 		result = append(result, &posts[i])
@@ -37,7 +37,7 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*structures.Post, error) {
 }
 
 func (r *queryResolver) Post(ctx context.Context, id int) (*structures.Post, error) {
-	post, err := r.Storage.GetPostbyId(ctx, id)
+	post, err := r.StoragePost.GetPostbyId(ctx, id)
 	if err != nil {
 		return post, err
 	}
@@ -45,7 +45,7 @@ func (r *queryResolver) Post(ctx context.Context, id int) (*structures.Post, err
 }
 
 func (r *mutationResolver) CloseCommentsPost(ctx context.Context, user string, postID int, commentsAllowed bool) (*structures.Post, error) {
-	post, err := r.Storage.GetPostbyId(ctx, postID)
+	post, err := r.StoragePost.GetPostbyId(ctx, postID)
 	if err != nil {
 		return nil, errors.New("post not found")
 	}
@@ -54,7 +54,7 @@ func (r *mutationResolver) CloseCommentsPost(ctx context.Context, user string, p
 	}
 	post.AllowComments = commentsAllowed
 
-	err = r.Storage.CloseComments(ctx, post)
+	err = r.StoragePost.CloseComments(ctx, post)
 	if err != nil {
 		return nil, errors.New("failed to update post")
 	}

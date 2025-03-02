@@ -3,7 +3,7 @@ schema:
 exec:
   filename: graph/generated/generated.go
 model:
-  filename: graph/model/models_gen.go
+  filename: graph/model/modelsGen.go
 # настраивает, как будут организованы резолверы
 resolver:
   layout: follow-schema

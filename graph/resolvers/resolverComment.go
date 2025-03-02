@@ -4,12 +4,20 @@ import (
 	"context"
 	"errors"
 	"gql-comments/graph/model"
+	// "gql-comments/storage/inmemory"
 	"gql-comments/structures"
 )
 
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*structures.Comment, error) {
 	if input.PostID == 0 || input.User == "" || input.Text == "" {
 		return nil, errors.New("invalid input: postID, user, and text must not be empty")
+	}
+	post, err := r.StoragePost.GetPostbyId(ctx, input.PostID)
+	if err != nil {
+		return nil, errors.New("post not found")
+	}
+	if !post.AllowComments {
+		return nil, errors.New("comments are disabled for this post")
 	}
 	if len(input.Text) > 2000 {
 		return nil, errors.New("comment exceeds 2000 characters")
