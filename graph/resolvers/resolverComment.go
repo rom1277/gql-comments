@@ -3,8 +3,8 @@ package resolvers
 import (
 	"context"
 	"errors"
-	"gql-comments/graph/model"
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/graph/model"
+	"github.com/rom1277/gql-comments/structures"
 )
 
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewComment) (*structures.Comment, error) {

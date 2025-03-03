@@ -2,8 +2,8 @@ package inmemory_test
 
 import (
 	"context"
-	"gql-comments/storage/inmemory"
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/storage/inmemory"
+	"github.com/rom1277/gql-comments/structures"
 	"testing"
 )
 

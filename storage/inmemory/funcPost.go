@@ -3,7 +3,7 @@ package inmemory
 import (
 	"context"
 	"errors"
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/structures"
 	"time"
 )
 

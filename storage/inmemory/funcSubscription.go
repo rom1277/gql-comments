@@ -1,7 +1,7 @@
 package inmemory
 
 import (
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/structures"
 )
 
 func (n *Notifier) Subscribe(postID int, ch chan *structures.Comment) {

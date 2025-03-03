@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/lib/pq"
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/structures"
 	"time"
 )
 

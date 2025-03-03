@@ -4,8 +4,8 @@ import (
 	"context"
 	// "errors"
 	// "github.com/stretchr/testify/assert"
+	"github.com/rom1277/gql-comments/structures"
 	"github.com/stretchr/testify/mock"
-	"gql-comments/structures"
 )
 
 type MockPostStorage struct {

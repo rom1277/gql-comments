@@ -1,8 +1,8 @@
 package resolvers
 
 import (
-	"gql-comments/graph/generated"
-	"gql-comments/storage"
+	"github.com/rom1277/gql-comments/graph/generated"
+	"github.com/rom1277/gql-comments/storage"
 )
 
 const (

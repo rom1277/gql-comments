@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/rom1277/gql-comments/graph/model"
+	"github.com/rom1277/gql-comments/graph/resolvers"
+	"github.com/rom1277/gql-comments/graph/resolvers/testResolvers/mocks"
+	"github.com/rom1277/gql-comments/structures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gql-comments/graph/model"
-	"gql-comments/graph/resolvers"
-	"gql-comments/graph/resolvers/testResolvers/mocks"
-	"gql-comments/structures"
 )
 
 func TestCreatePost(t *testing.T) {

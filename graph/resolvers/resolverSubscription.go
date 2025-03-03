@@ -2,8 +2,8 @@ package resolvers
 
 import (
 	"context"
-	"gql-comments/graph/generated"
-	"gql-comments/structures"
+	"github.com/rom1277/gql-comments/graph/generated"
+	"github.com/rom1277/gql-comments/structures"
 )
 
 type subscriptionResolver struct{ *Resolver }

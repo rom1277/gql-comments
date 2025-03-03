@@ -1,4 +1,4 @@
-module gql-comments
+module github.com/rom1277/gql-comments
 
 go 1.23.1
 
