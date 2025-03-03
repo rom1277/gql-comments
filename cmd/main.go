@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -13,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -33,7 +36,9 @@ func main() {
 		commentStorage = inmemory.NewInMemoryStorageCommenst()
 		notifier = inmemory.NewNotifier()
 	case "postgres":
-		connStr := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+		connStr := "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
+		waitForPostgres(connStr)
+
 		var err error
 
 		postStorage, err = postgres.NewPostgresPostStorage(connStr)
@@ -51,11 +56,25 @@ func main() {
 
 	resolver := resolvers.NewResolver(postStorage, commentStorage, notifier)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
-
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func waitForPostgres(dsn string) {
+	for {
+		db, err := sql.Open("postgres", dsn)
+		if err == nil {
+			err = db.Ping()
+			if err == nil {
+				fmt.Println("Successfully connected to PostgreSQL!")
+				return
+			}
+		}
+		log.Println("Waiting for PostgreSQL to be ready...")
+		time.Sleep(5 * time.Second)
+	}
 }
