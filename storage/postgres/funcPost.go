@@ -10,21 +10,6 @@ import (
 	"time"
 )
 
-type PostgresPostStorage struct {
-	db *sql.DB
-}
-
-func NewPostgresPostStorage(connStr string) (*PostgresPostStorage, error) {
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
-	}
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping PostgreSQL: %w", err)
-	}
-	return &PostgresPostStorage{db: db}, nil
-}
-
 func (s *PostgresPostStorage) CreatePost(ctx context.Context, post *structures.Post) (*structures.Post, error) {
 	if post.CreatedAt.IsZero() {
 		post.CreatedAt = time.Now()

@@ -2,27 +2,11 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
 	"gql-comments/structures"
 	"time"
 )
-
-type PostgresCommentStorage struct {
-	db *sql.DB
-}
-
-func NewPostgresCommentStorage(connStr string) (*PostgresCommentStorage, error) {
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
-	}
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping PostgreSQL: %w", err)
-	}
-	return &PostgresCommentStorage{db: db}, nil
-}
 
 func (s *PostgresCommentStorage) CreateComment(ctx context.Context, comment *structures.Comment) (*structures.Comment, error) {
 	comment.CreatedAt = time.Now()
