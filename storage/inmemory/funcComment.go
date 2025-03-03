@@ -20,7 +20,6 @@ func (c *InMemoryStorageCommenst) CreateComment(ctx context.Context, comment *st
 		c.postComments[comment.PostID] = append(c.postComments[comment.PostID], comment.ID)
 	}
 
-	// Если комментарий является ответом на другой комментарий, добавляем его в replies
 	if comment.ParentID != nil {
 		parentID := *comment.ParentID
 		if _, ok := c.replies[parentID]; !ok {

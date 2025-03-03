@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"gql-comments/graph/model"
-	// "gql-comments/storage/inmemory"
 	"gql-comments/structures"
 )
 
@@ -12,7 +11,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 	if input.PostID == 0 || input.User == "" || input.Text == "" {
 		return nil, errors.New("invalid input: postID, user, and text must not be empty")
 	}
-	post, err := r.StoragePost.GetPostbyId(ctx, input.PostID)
+	post, err := r.PostStorage.GetPostByID(ctx, input.PostID)
 	if err != nil {
 		return nil, errors.New("post not found")
 	}
@@ -28,7 +27,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.NewCom
 		User:     input.User,
 		Text:     input.Text,
 	}
-	createdComment, err := r.StorageComments.CreateComment(ctx, comment)
+	createdComment, err := r.CommentStorage.CreateComment(ctx, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,7 @@ func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, of
 		offsetVal = *offset
 	}
 
-	topLevelComments, err := r.StorageComments.GetCommentsByPost(postID, limitVal, offsetVal)
+	topLevelComments, err := r.CommentStorage.GetCommentsByPost(postID, limitVal, offsetVal)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +61,8 @@ func (r *queryResolver) Comments(ctx context.Context, postID int, limit *int, of
 	return topLevelComments, nil
 }
 
-// Вспомогательный метод для получения ответов на комментарии
 func (r *queryResolver) getReplies(commentID int) ([]*structures.Comment, error) {
-	replies, err := r.StorageComments.GetResponsesByCommentID(commentID, -1, 0)
+	replies, err := r.CommentStorage.GetResponsesByCommentID(commentID, -1, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -84,12 +82,11 @@ func (r *queryResolver) Replies(ctx context.Context, commentID int, limit *int, 
 	if limit != nil {
 		limitVal = *limit
 	}
-
 	offsetVal := ConstOffset
 	if offset != nil {
 		offsetVal = *offset
 	}
-	replies, err := r.StorageComments.GetResponsesByCommentID(commentID, limitVal, offsetVal)
+	replies, err := r.CommentStorage.GetResponsesByCommentID(commentID, limitVal, offsetVal)
 	if err != nil {
 		return nil, err
 	}

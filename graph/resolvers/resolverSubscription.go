@@ -13,10 +13,8 @@ func (r *Resolver) Subscription() generated.SubscriptionResolver {
 }
 
 func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID int) (<-chan *structures.Comment, error) {
-
 	commentChannel := make(chan *structures.Comment, 1)
 	r.Notifier.Subscribe(postID, commentChannel)
-	// Отписываемся при завершении запроса
 	go func() {
 		<-ctx.Done()
 		r.Notifier.Unsubscribe(postID, commentChannel)

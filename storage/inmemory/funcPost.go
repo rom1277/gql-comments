@@ -16,16 +16,6 @@ func (sp *InMemoryStoragePost) CreatePost(ctx context.Context, post *structures.
 	return post, nil
 }
 
-func (sp *InMemoryStoragePost) GetAllPosts() []structures.Post {
-	sp.mu.Lock()
-	defer sp.mu.Unlock()
-	var posts []structures.Post
-	for _, post := range sp.posts {
-		posts = append(posts, post)
-	}
-	return posts
-}
-
 func (sp *InMemoryStoragePost) GetPostbyId(ctx context.Context, id int) (*structures.Post, error) {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
@@ -44,4 +34,25 @@ func (sp *InMemoryStoragePost) CloseComments(ctx context.Context, post *structur
 	}
 	sp.posts[post.ID] = *post
 	return nil
+}
+
+func (sp *InMemoryStoragePost) GetAllPosts() []*structures.Post {
+	sp.mu.Lock()
+	defer sp.mu.Unlock()
+	var posts []*structures.Post
+	for _, post := range sp.posts {
+		p := post
+		posts = append(posts, &p)
+	}
+	return posts
+}
+
+func (sp *InMemoryStoragePost) GetPostByID(ctx context.Context, id int) (*structures.Post, error) {
+	sp.mu.Lock()
+	defer sp.mu.Unlock()
+	post, ok := sp.posts[id]
+	if !ok {
+		return nil, errors.New("post not found")
+	}
+	return &post, nil
 }

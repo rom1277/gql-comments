@@ -1,11 +1,15 @@
 package main
 
 import (
+	"flag"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"gql-comments/graph/generated"
 	"gql-comments/graph/resolvers"
+	"gql-comments/storage"
 	"gql-comments/storage/inmemory"
+	"gql-comments/storage/postgres"
 	"log"
 	"net/http"
 	"os"
@@ -16,30 +20,42 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+	storageType := flag.String("storage", "inmemory", "Storage type: 'inmemory' or 'postgres'")
+	flag.Parse()
 
-	inMemoryStoragePost := inmemory.NewInMemoryStoragePost()
-	inMemoryStorageComments := inmemory.NewInMemoryStorageCommenst()
-	Notifier := inmemory.NewNotifier()
+	var postStorage storage.PostStorage
+	var commentStorage storage.CommentStorage
+	var notifier storage.Notifier
 
-	resolver := resolvers.NewResolver(inMemoryStoragePost, inMemoryStorageComments, Notifier)
-	// Создание GraphQL сервера
+	switch *storageType {
+	case "inmemory":
+		postStorage = inmemory.NewInMemoryStoragePost()
+		commentStorage = inmemory.NewInMemoryStorageCommenst()
+		notifier = inmemory.NewNotifier()
+	case "postgres":
+		connStr := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+		var err error
 
-	// handler.NewDefaultServer() изначально предназначался для демонстрационных целей и не рекомендуется для использования в продакшене.
-	// Использование handler.New позволяет настроить сервер более детально и избежать потенциальных проблем, связанных с устаревшими функциями.
-	// srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: inMemoryStorage}}))
+		postStorage, err = postgres.NewPostgresPostStorage(connStr)
+		if err != nil {
+			log.Fatalf("Failed to connect to PostgreSQL for posts: %v", err)
+		}
+		commentStorage, err = postgres.NewPostgresCommentStorage(connStr)
+		if err != nil {
+			log.Fatalf("Failed to connect to PostgreSQL for comments: %v", err)
+		}
+		notifier = inmemory.NewNotifier()
+	default:
+		log.Fatalf("Unknown storage type: %s", *storageType)
+	}
 
-	// graph.NewExecutableSchema создаёт исполняемую схему GraphQL.
-	// handler.NewDefaultServer оборачивает схему в HTTP-обработчик.
+	resolver := resolvers.NewResolver(postStorage, commentStorage, notifier)
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
-	//http.Handle — связывает определенный путь ("/") с обработчиком запросов.
-	// playground.Handler("GraphQL playground", "/query") — это обработчик, который предоставляет интерактивный веб-интерфейс (GraphQL Playground) для тестирования GraphQL-запросов.
+
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	//Здесь мы связываем путь "/query" с обработчиком srv, который отвечает за выполнение фактических GraphQL-запросов.
 	http.Handle("/query", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 
 	log.Fatal(http.ListenAndServe(":"+port, nil))
-	// http.ListenAndServe — это функция, которая запускает HTTP-сервер.
-	// (nil) указывает, что будут использованы глобальные маршруты, зарегистрированные через http.Handle.
 }

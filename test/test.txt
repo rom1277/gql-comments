@@ -1,0 +1,144 @@
+# создать пост
+mutation {
+  createPost(input: { user: "JohnDoe", title: "My First Post", content: "This is the content of my first post.", allowComments: true }) {
+    id
+    title
+    content
+    allowComments
+    createdAt
+  }
+}
+
+# создать коммент под постом
+mutation {
+  createComment(input: { postID: 1, user: "Rom", text: "Nice Post" }) {
+    id
+    user
+    postID
+    text
+    createdAt  
+   }
+}
+
+
+
+# отвечаем на коммент
+mutation {
+  createComment(input: { postID: 1, parentID: 101, user: "Adam", text: "response to comment 101" }) {
+    id
+    user
+    text
+    createdAt
+    parentID
+  }
+}
+
+    
+# #  вывод комментариев под постом
+query {
+  comments(postID: 1, limit: 10, offset: 1) {
+    id
+    user
+    text
+    parentID
+    createdAt
+    replies {
+      id
+      user
+      text
+      createdAt
+      replies {
+        id
+        user
+        text
+        createdAt
+      }
+    }
+  }
+}
+
+
+# закрыть комментарии
+mutation {
+  closeCommentsPost(user: "JohnDoe", postID: 1, commentsAllowed: false){
+        id
+    title
+    content
+    allowComments
+    createdAt 
+  }
+}
+
+# Подписка
+subscription {
+  commentAdded(postID: 1) {
+    id
+    user
+    text
+    createdAt
+  }
+}
+
+
+
+# вывод постов с большой вложенностью
+{
+  posts {
+    id
+    title
+    user
+    content
+    allowComments
+    createdAt
+    comments(limit: 10, offset: 0) {
+      id
+      postID
+      parentID
+      createdAt
+      user
+      replies(limit: 10, offset: 0) {
+        id
+        postID
+        parentID
+        createdAt
+        user
+        replies(limit: 10, offset: 0) {
+          id
+          postID
+          parentID
+          createdAt
+          user
+          replies(limit: 10, offset: 0) {
+            id
+            postID
+            parentID
+            createdAt
+            user
+            replies(limit: 10, offset: 0) {
+              id
+              postID
+              parentID
+              createdAt
+              user
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+query {
+  comments(postID: 1, limit: 10, offset: 1) {
+    id
+    user
+    text
+    createdAt
+    postID
+    parentID
+  }
+}

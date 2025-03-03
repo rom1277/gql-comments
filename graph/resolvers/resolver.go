@@ -2,7 +2,7 @@ package resolvers
 
 import (
 	"gql-comments/graph/generated"
-	"gql-comments/storage/inmemory"
+	"gql-comments/storage"
 )
 
 const (
@@ -10,15 +10,15 @@ const (
 	ConstLimit  = 10
 )
 
+type Resolver struct {
+	PostStorage    storage.PostStorage
+	CommentStorage storage.CommentStorage
+	Notifier       storage.Notifier
+}
+
 type mutationResolver struct{ *Resolver }
 
 type queryResolver struct{ *Resolver }
-
-type Resolver struct {
-	StoragePost     *inmemory.InMemoryStoragePost
-	StorageComments *inmemory.InMemoryStorageCommenst
-	Notifier        *inmemory.Notifier
-}
 
 func (r *Resolver) Mutation() generated.MutationResolver {
 	return &mutationResolver{r}
@@ -28,10 +28,10 @@ func (r *Resolver) Query() generated.QueryResolver {
 	return &queryResolver{r}
 }
 
-func NewResolver(storagePost *inmemory.InMemoryStoragePost, storageComments *inmemory.InMemoryStorageCommenst, notifier *inmemory.Notifier) *Resolver {
+func NewResolver(postStorage storage.PostStorage, commentStorage storage.CommentStorage, notifier storage.Notifier) *Resolver {
 	return &Resolver{
-		StoragePost:     storagePost,
-		StorageComments: storageComments,
-		Notifier:        notifier,
+		PostStorage:    postStorage,
+		CommentStorage: commentStorage,
+		Notifier:       notifier,
 	}
 }
