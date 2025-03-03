@@ -9,7 +9,7 @@ mutation {
   }
 }
 
-# создать коммент под постом
+# создать комментарий под постом
 mutation {
   createComment(input: { postID: 1, user: "Rom", text: "Nice Post" }) {
     id
@@ -20,9 +20,7 @@ mutation {
    }
 }
 
-
-
-# отвечаем на коммент
+# ответить на комментарий
 mutation {
   createComment(input: { postID: 1, parentID: 101, user: "Adam", text: "response to comment 101" }) {
     id
@@ -33,8 +31,25 @@ mutation {
   }
 }
 
+# вывести пост по id
+query {
+  post(id: 1) {
+    id
+    title
+    user
+    content
+ allowComments
+    createdAt
+    comments(limit: 10, offset: 0) {
+      id
+      user
+      text
+      createdAt
+    }
+  }
+}
     
-# #  вывод комментариев под постом
+#  вывести комментарии под постом
 query {
   comments(postID: 1, limit: 10, offset: 1) {
     id
@@ -57,7 +72,6 @@ query {
   }
 }
 
-
 # закрыть комментарии
 mutation {
   closeCommentsPost(user: "JohnDoe", postID: 1, commentsAllowed: false){
@@ -69,7 +83,7 @@ mutation {
   }
 }
 
-# Подписка
+# Подписаться
 subscription {
   commentAdded(postID: 1) {
     id
@@ -79,9 +93,7 @@ subscription {
   }
 }
 
-
-
-# вывод постов с большой вложенностью
+# вывести посты (с большой вложенностью)
 {
   posts {
     id
@@ -128,10 +140,7 @@ subscription {
   }
 }
 
-
-
-
-
+# вывести комментари под постом
 query {
   comments(postID: 1, limit: 10, offset: 1) {
     id
